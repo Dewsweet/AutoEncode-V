@@ -5,7 +5,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo       *************************************************
-echo       *              AutoEncoder v0.6                 *
+echo       *              AutoEncoder v0.7.1               *
 echo       *            简易批处理视频编码脚本             *
 echo       *                  By Dewsweet                  *
 echo       *        虽然但是，还是图形操作界面用的多       *
@@ -301,7 +301,8 @@ for %%i in (3 av1 svtav1 svt_av1) do (
                     echo 请选择需要需要转换媒体格式的编码器:
                     echo.
                     echo PNG : png
-                    echo JPG2000 : jpeg2000
+                    echo JPEG : jpg
+                    echo JPEG2000 : jpeg2000
                     echo WEBP : libwebp
                     echo AVIF : libsvtav1
                     echo JXL : libjxl
@@ -348,6 +349,14 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         :tspicture
         set /p codec=请输入编码器名称:
 
+        if /i "!codec!"=="jpg" (
+            set OutputExt=jpg
+            for %%a in (%*) do (
+                ffmpeg -i "%%a" -q 5 "%%~na_!codec!.!OutputExt!"
+            )
+            pause
+            exit
+        ) 
         if /i "!codec!"=="png" set OutputExt=png
         if /i "!codec!"=="jpeg2000" set OutputExt=jpg
         if /i "!codec!"=="libwebp" set OutputExt=webp
