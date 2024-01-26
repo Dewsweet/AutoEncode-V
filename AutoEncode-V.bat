@@ -75,8 +75,69 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         echo ============================================================
         echo #ffmpeg
         echo 转换封装格式
-        set /p container=转成什么：(mkv mp4 mov avi wmv rmvb flv)
-        :: 获取所有视频文件并循环处理
+
+        echo 本功能主要是转换封装格式 内部媒体编码不会有任何改变
+
+        echo 若你需要转换视频编码格式 可在下确认
+        echo.
+        
+        set /p IsTransCoding=是否转码(Y,N):
+
+        if /i "!IsTransCoding!"=="y" (
+            goto TransCoding
+        ) else (
+            goto NoTransCoding
+        )
+
+        :TransCoding
+        set /p container=转成什么(mkv mp4 mov avi wmv rmvb flv):
+        echo 选择视频编码格式：
+        echo 1. AVC
+        echo 2. AVC(NV显卡加速)
+        echo 3. HEVC
+        echo 4. HEVC(NV显卡加速)
+        echo 5. AV1
+        set /p codec=输入数字选择视频编码格式:
+        if "!codec!"=="1" (
+            for %%i in (%*) do (
+                set "input_file=%%i"
+                set "file_name=%%~ni" 
+                ffmpeg -y -i "!input_file!" -c:v libx264 -c:a copy -c:s copy "!file_name!.!container!"
+            )
+        )
+        if "!codec!"=="2" (
+            for %%i in (%*) do (
+                set "input_file=%%i"
+                set "file_name=%%~ni" 
+                ffmpeg -y -i "!input_file!" -c:v h264_nvenc -c:a copy -c:s copy "!file_name!.!container!"
+            )
+        )
+        if "!codec!"=="3" (
+            for %%i in (%*) do (
+                set "input_file=%%i"
+                set "file_name=%%~ni" 
+                ffmpeg -y -i "!input_file!" -c:v libx265 -c:a copy -c:s copy "!file_name!.!container!"
+            )
+        )  
+        if "!codec!"=="4" (
+            for %%i in (%*) do (
+                set "input_file=%%i"
+                set "file_name=%%~ni" 
+                ffmpeg -y -i "!input_file!" -c:v hevc_nvenc -c:a copy -c:s copy "!file_name!.!container!"
+            )
+        )
+        if "!codec!"=="5" (
+            for %%i in (%*) do (
+                set "input_file=%%i"
+                set "file_name=%%~ni" 
+                ffmpeg -y -i "!input_file!" -c:v libsvtav1 -c:a copy -c:s copy "!file_name!.!container!"
+            )
+        )
+        pause
+        exit
+
+        :NoTransCoding
+        set /p container=转成什么(mkv mp4 mov avi wmv rmvb flv):
         for %%i in (%*) do (
             set "input_file=%%i"
             set "file_name=%%~ni"  
@@ -84,6 +145,7 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         )
         pause
         exit
+
 
     :ffmpeg3
         echo ============================================================
@@ -297,6 +359,7 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         )
         pause
         exit
+
 
 :tox264
     echo ============================================
