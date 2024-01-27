@@ -1,34 +1,61 @@
 @echo off
 chcp 65001 > nul
-mode con cols=60 lines=40 
+title AutoEncode-V
 setlocal enabledelayedexpansion
 
+echo 初始化中......
+ping 127.0.0.1 -n 2 > nul
+mode con cols=60 lines=40 
+
+rem ===================================信息打印==========================================
+:sloop
+cls
 echo.
 echo       *************************************************
-echo       *              AutoEncoder v0.7.1               *
-echo       *            简易批处理视频编码脚本             *
+echo       *              AutoEncode-V v0.7.1              *
 echo       *                  By Dewsweet                  *
-echo       *        虽然但是，还是图形操作界面用的多       *
+echo       *            简易批处理视频编码脚本             *
+echo       *        虽然但是 还是图形操作界面用的多        *
 echo       *************************************************
 echo.
 
-rem 拖入文件的路径
-set input_file=%~1
-rem 拖入文件的文件夹路径
-set input_path=%~dp1
-rem 文件命
-set file_name=%~n1
+echo    [38;2;255;153;0m使用说明:[m
+echo.
+echo            1. 将需要处理的视频文件拖到本程序上
+echo            2. 根据程序的文字提示选择相应的功能
+
+echo            3. 等待程序处理完毕
+
+echo            4. 根据提示关闭程序
+echo.
 
 
-rem 选择编码器
+echo    [38;2;255;153;0m注意事项:[m
+echo.
+echo            本程序只是简易的Wiodows批处理脚本
+
+echo            核心功能都是由 ffmpeg 这样的开源媒体处理软件
+
+echo            以及 x264 x265 svt_av1 这些开源视频编码器实现
+echo.
 
 echo    [38;2;255;153;0m编码器选择:[m
 echo.
-echo               ffmpeg                1. x264
-echo               2. x265               3. svt_av1
-echo ************************************************************
+echo             0. [38;2;68;157;68mffmpeg(转码 抽流 封装)[m  
+echo             1. [38;2;0;94;214mx264[m              
+echo             2. [38;2;0;94;214mx265[m                 
+echo             3. [38;2;188;32;92msvt_av1[m
+echo.
 
-set /p encoder_tool=选择需要使用的编码器：
+
+rem ===================================变量初始化========================================
+
+set input=%~1
+set input_path=%~dp1
+set file_name=%~n1
+
+echo ************************************************************
+set /p encoder_tool=选择功能(输入名称或数字 并回车):
 for %%i in (ffmpeg ff mpeg fm f) do (
     if "%encoder_tool%"=="%%i" goto toffmpeg
 )
@@ -42,46 +69,108 @@ for %%i in (3 av1 svtav1 svt_av1) do (
     if "%encoder_tool%"=="%%i" goto toav1
 )
 
-:: ----------------------------------编码器选择----------------------------------
+rem ==================================ffmepg 功能========================================
 :toffmpeg
-    echo ============================================================
-    echo                         [38;2;68;157;68m# ffmpeg[m
+    cls
     echo.
-    echo    [38;2;255;153;0m用ffmpeg 干嘛:[m
+    echo                         [38;2;68;157;68m# FFmpeg[m
+    echo.
+    echo    ****************************************************
+    echo          [38;2;68;157;68mFFmpeg[m 是一个开源的音视频处理软件
+    
+    echo          可以做到你能想象到的对音视频的任何处理
 
-    echo 1. 查看文件信息
-    echo 2. 转换视频封装格式(支持多文件)
-    echo 3. 视频文件抽流
-    echo 4. 媒体文件混流
-    echo 5. 媒体重编码
+    echo          包括但不限于转码、封装、抽流、压制、剪辑、合并
 
-    set /p ffmpegto=选择需要实现的功能:
+    echo          是数媒人在无数个濒临崩溃的夜晚中的量身利器
+    echo    ****************************************************
+    echo.
+
+    echo    ====================================================
+    echo    [38;2;255;153;0m功能说明:[m
+    echo.
+    echo          每个功能选项后面都有较详细的解释
+    echo.
+
+    echo          转封装：更改文件扩展名
+
+    echo          重编码：转换文件编码格式
+
+    echo          抽流：抽取视频文件的某一轨道
+
+    echo          混流：将一堆文件封装成视频
+
+    echo.
+    echo          ^* ：支持批量处理
+
+    echo          ^+ ：支持多个文件
+
+    echo          ^& ：支持重复处理
+    echo    ====================================================
+
+    echo    [38;2;255;153;0m用 ffmpeg 干嘛:[m
+    echo.
+    echo             1. 查看文件信息
+    echo             2. 转换视频封装格式 ^*+
+    echo             3. 媒体文件重编码 ^*+
+    echo             4. 视频文件抽流 ^&
+    echo             5. 媒体文件混流 ^+
+    echo.
+    echo             [38;2;0;65;5m更多功能正在思考中……[m
+
+    echo             [38;2;255;124;3m输入 0 返回编码器选择界面[m
+    echo.
+
+    echo ************************************************************
+    set /p ffmpegto=选择功能(输入名称或数字 并回车):
     if "%ffmpegto%"=="1" goto ffmpeg1
     if "%ffmpegto%"=="2" goto ffmpeg2
     if "%ffmpegto%"=="3" goto ffmpeg3
     if "%ffmpegto%"=="4" goto ffmpeg4
     if "%ffmpegto%"=="5" goto ffmpeg5
+    if "%ffmpegto%"=="0" goto sloop
 
     ::功能选择
     :ffmpeg1
-        echo ============================================================
-        echo #ffmpeg
-        echo 查看文件信息
-        ffmpeg -i "%input_file%" -hide_banner 
-        pause
+        cls
+        echo.
+        echo                          [38;2;68;157;68m# FFmpeg[m
+        echo.
+        echo =======================查看文件信息=========================
+        echo.
+        echo       查询媒体文件各轨道的具体信息，并输出到info.txt中
+        echo.
+        echo                     ···3秒后开始执行···
+        ping 127.0.0.1 -n 3 >nul
+
+        ffmpeg -i "%input%" -hide_banner 2>&1 | tee info.txt
+        @REM start "" info.txt
         exit
 
     :ffmpeg2
-        echo ============================================================
-        echo #ffmpeg
-        echo 转换封装格式
-
-        echo 本功能主要是转换封装格式 内部媒体编码不会有任何改变
-
-        echo 若你需要转换视频编码格式 可在下确认
+        cls
         echo.
-        
-        set /p IsTransCoding=是否转码(Y,N):
+        echo                          [38;2;68;157;68m# FFmpeg[m
+        echo.
+        echo =====================转换视频封装格式=======================
+        echo.
+        echo    [38;2;255;153;0m功能说明:[m
+        echo.
+        echo           本功能主要是转换视频的扩展名 
+     
+        echo           本质是复制 不会对视频编码格式进行转码
+     
+        echo           但也提供了基本转码的功能
+             
+        echo           可在下面确认是否转码
+        echo.
+        echo           由于每种封装对封装内容的要求不同
+
+        echo           [38;2;255;68;68m不保证每种封装格式都能转换成功[m
+        echo.   
+        echo ************************************************************
+        set /p IsTransCoding=是否转码(是:Y 否:N):
+        echo.
 
         if /i "!IsTransCoding!"=="y" (
             goto TransCoding
@@ -90,75 +179,87 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         )
 
         :TransCoding
+        
         set /p container=转成什么(mkv mp4 mov avi wmv rmvb flv):
+        echo.
         echo 选择视频编码格式：
-        echo 1. AVC
-        echo 2. AVC(NV显卡加速)
-        echo 3. HEVC
-        echo 4. HEVC(NV显卡加速)
-        echo 5. AV1
+        echo.
+        echo                [38;2;0;191;255m1. AVC[m
+        echo                [38;2;0;191;255m2. AVC[m [38;2;118;185;0m(NV显卡加速)[m
+        echo                [38;2;52;152;219m3. HEVC[m
+        echo                [38;2;52;152;219m4. HEVC[m [38;2;118;185;0m(NV显卡加速)[m
+        echo                [38;2;188;32;92m5. AV1[m
+        echo.
         set /p codec=输入数字选择视频编码格式:
         if "!codec!"=="1" (
             for %%i in (%*) do (
-                set "input_file=%%i"
+                set "input=%%i"
                 set "file_name=%%~ni" 
-                ffmpeg -y -i "!input_file!" -c:v libx264 -c:a copy -c:s copy "!file_name!.!container!"
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libx264 -preset veryslow -crf 19 -c:a copy -c:s copy "!file_name!.!container!"
             )
         )
         if "!codec!"=="2" (
             for %%i in (%*) do (
-                set "input_file=%%i"
+                set "input=%%i"
                 set "file_name=%%~ni" 
-                ffmpeg -y -i "!input_file!" -c:v h264_nvenc -c:a copy -c:s copy "!file_name!.!container!"
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v h264_nvenc -preset slow -crf 17 -c:a copy -c:s copy "!file_name!.!container!"
             )
         )
         if "!codec!"=="3" (
             for %%i in (%*) do (
-                set "input_file=%%i"
+                set "input=%%i"
                 set "file_name=%%~ni" 
-                ffmpeg -y -i "!input_file!" -c:v libx265 -c:a copy -c:s copy "!file_name!.!container!"
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libx265 -preset slower -crf 23 -c:a copy -c:s copy "!file_name!.!container!"
             )
         )  
         if "!codec!"=="4" (
             for %%i in (%*) do (
-                set "input_file=%%i"
+                set "input=%%i"
                 set "file_name=%%~ni" 
-                ffmpeg -y -i "!input_file!" -c:v hevc_nvenc -c:a copy -c:s copy "!file_name!.!container!"
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v hevc_nvenc -preset slow -crf 21 -c:a copy -c:s copy "!file_name!.!container!"
             )
         )
         if "!codec!"=="5" (
             for %%i in (%*) do (
-                set "input_file=%%i"
+                set "input=%%i"
                 set "file_name=%%~ni" 
-                ffmpeg -y -i "!input_file!" -c:v libsvtav1 -c:a copy -c:s copy "!file_name!.!container!"
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libsvtav1 -preset 4 -crf 23 -c:a copy -c:s copy "!file_name!.!container!"
             )
         )
-        pause
+        echo.
+        echo ============================================================
+        echo # 转码结束
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
 
         :NoTransCoding
         set /p container=转成什么(mkv mp4 mov avi wmv rmvb flv):
         for %%i in (%*) do (
-            set "input_file=%%i"
+            set "input=%%i"
             set "file_name=%%~ni"  
-            ffmpeg -y -i "!input_file!" -c copy "!file_name!.!container!" 
+            ffmpeg -y -i "!input!" -c copy "!file_name!.!container!" 
         )
-        pause
+        echo.
+        echo ============================================================
+        echo # 转码结束
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
 
 
-    :ffmpeg3
+    :ffmpeg4
         echo ============================================================
         echo #ffmpeg
         echo 抽流
         set ext=
         set "matched=false"
 
-        for /f "delims=," %%i in ('ffmpeg -i "!input_file!" -hide_banner 2^>^&1 ^| findstr "Stream" ') do echo %%i
+        for /f "delims=," %%i in ('ffmpeg -i "!input!" -hide_banner 2^>^&1 ^| findstr "Stream" ') do echo %%i
 
         set /p tracker=选择你要抽取的轨道:
 
-        for /f "tokens=4 delims=, " %%a in ('ffmpeg -i "!input_file!" -hide_banner 2^>^&1 ^| findstr "#0:!tracker!" ') do set "ext=%%a"
+        for /f "tokens=4 delims=, " %%a in ('ffmpeg -i "!input!" -hide_banner 2^>^&1 ^| findstr "#0:!tracker!" ') do set "ext=%%a"
 
         echo 你选择的轨道的媒体格式为:!ext!
         if "!ext!"=="av1" set "ext=ivf"
@@ -166,20 +267,20 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         for %%b in (hevc h265 avc h264 av1 ivf aac flac wav ac3 opus mp3 ass srt) do (
             if "!ext!"=="%%b" (
                 set "matched=ture"
-                ffmpeg -i "!input_file!" -map 0:!tracker! -c copy output.!ext!
+                ffmpeg -i "!input!" -map 0:!tracker! -c copy output.!ext!
             )
         )
 
         if not "!matched!"=="ture" (
             set /p next=输入自定义扩展名:
-            ffmpeg -i "!input_file!" -map 0:!tracker! -c copy output.!next!
+            ffmpeg -i "!input!" -map 0:!tracker! -c copy output.!next!
         )
 
         set /p retrun=是否需要再次执行(y,n)
         if "%retrun%"=="y" goto ffmpeg3
         exit
 
-    :ffmpeg4
+    :ffmpeg5
         echo ============================================================
         echo #ffmpeg
         echo 封装
@@ -254,7 +355,7 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         pause
         exit
     
-    :ffmpeg5
+    :ffmpeg3
         echo ============================================================
         echo #ffmpeg
 
@@ -394,7 +495,7 @@ for %%i in (3 av1 svtav1 svt_av1) do (
         if "%parameter%"=="5" set encoder_par=--preset veryslow --me esa --subme 10 --merange 40 --no-fast-pskip --direct auto --weightb --keyint 70 --min-keyint 1 --bframes 12 --b-adapt 2 --ref 3 --crf 16 --tune grain --trellis 2 --fgo 15
     echo ============================================
     echo # x264开始压制
-    %ectool% %encoder_par% --output "%input_path%\%file_name%%output_ext%" "%input_file%" 
+    %ectool% %encoder_par% --output "%input_path%\%file_name%%output_ext%" "%input%" 2>&1 | tee info.txt
     echo # 结束压制
     pause
     exit
@@ -424,9 +525,9 @@ for %%i in (3 av1 svtav1 svt_av1) do (
     echo ============================================
     echo # x265开始压制
 
-    for /f %%a in ('ffprobe -v error -select_streams v^:0 -show_entries stream^=nb_frames -of default^=noprint_wrappers^=1^:nokey^=1 "%input_file%" ') do set in_frames=%%a
+    for /f %%a in ('ffprobe -v error -select_streams v^:0 -show_entries stream^=nb_frames -of default^=noprint_wrappers^=1^:nokey^=1 "%input%" ') do set in_frames=%%a
 
-    ffmpeg -i "%input_file%" -an -pix_fmt yuv420p -f yuv4mpegpipe -strict unofficial - | %ectool% --frames %in_frames% --y4m %encoder_par% --output "%input_path%\%file_name%%output_ext%" - log.txt
+    ffmpeg -i "%input%" -an -pix_fmt yuv420p -f yuv4mpegpipe -strict unofficial - | %ectool% --frames %in_frames% --y4m %encoder_par% --output "%input_path%\%file_name%%output_ext%" - log.txt
     echo # 结束压制
     pause
     exit
@@ -447,7 +548,7 @@ for %%i in (3 av1 svtav1 svt_av1) do (
 
     echo ============================================
     echo # AV1开始压制
-    ffmpeg -i "%input_file%" -an -pix_fmt yuv420p -f yuv4mpegpipe -strict unofficial - | %ectool% %encoder_par%  -b "%input_path%\%file_name%%output_ext%" -i stdin 
+    ffmpeg -i "%input%" -an -pix_fmt yuv420p -f yuv4mpegpipe -strict unofficial - | %ectool% %encoder_par%  -b "%input_path%\%file_name%%output_ext%" -i stdin 
     echo # 结束压制
     pause
     exit
