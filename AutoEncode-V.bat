@@ -12,7 +12,7 @@ rem ===================================信息打印=============================
 cls
 echo.
 echo       *************************************************
-echo       *              AutoEncode-V v0.8.2              *
+echo       *              AutoEncode-V v0.8.4              *
 echo       *                  By Dewsweet                  *
 echo       *            简易批处理视频编码脚本             *
 echo       *        虽然但是 还是图形操作界面用的多        *
@@ -468,6 +468,7 @@ rem ==================================ffmepg 功能=============================
                     echo                MP3  : libmp3lame
                     echo                AAC  : libfdk_aac / aac
                     echo                AC3  : ac3  / ac3_fixed
+                    echo                OGG  : libvorbis
                     goto tsaudio
                 )
             )
@@ -538,6 +539,8 @@ rem ==================================ffmepg 功能=============================
         if /i "!codec!"=="libopus" set OutputExt=opus
         if /i "!codec!"=="libfdk_aac" set OutputExt=aac
         if /i "!codec!"=="ac3_fixed" set OutputExt=ac3
+        if /i "!codec!"=="libvorbis" set OutputExt=ogg
+
 
         for %%a in (%*) do (
             ffmpeg -i %%a -c:v !codec! "%%~na_!codec!.!OutputExt!" >nul 2>nul
