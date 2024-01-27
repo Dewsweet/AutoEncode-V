@@ -12,7 +12,7 @@ rem ===================================信息打印=============================
 cls
 echo.
 echo       *************************************************
-echo       *              AutoEncode-V v0.7.1              *
+echo       *              AutoEncode-V v0.8.2              *
 echo       *                  By Dewsweet                  *
 echo       *            简易批处理视频编码脚本             *
 echo       *        虽然但是 还是图形操作界面用的多        *
@@ -52,7 +52,9 @@ rem ===================================变量初始化==========================
 
 set input=%~1
 set input_path=%~dp1
-set file_name=%~n1
+set input_name=%~n1
+set "output_ext="
+set "IsSwitch=false"
 
 echo ************************************************************
 set /p encoder_tool=选择功能(输入名称或数字 并回车):
@@ -249,47 +251,99 @@ rem ==================================ffmepg 功能=============================
 
 
     :ffmpeg4
+        cls
+        echo.
+        echo                          [38;2;68;157;68m# FFmpeg[m
+        echo.
+        echo =======================视频文件抽流=========================
+        echo.
+        echo    [38;2;255;153;0m功能说明:[m
+        echo.
+        echo           本功能是指定抽取一个视频文件中所选择的轨道
+     
+        echo           对多轨道视频文件可重复抽流
+     
+        echo           因此不支持批量文件的特点轨道抽取
+        echo.
+        echo           [38;2;255;68;68m不支持对 BD 和 DVD 之类的原盘文件的复杂抽流[m
+
+        echo           请使用 [38;2;147;255;122meac3to[m 进行对“原盘”文件的抽流
+        echo.
         echo ============================================================
-        echo #ffmpeg
-        echo 抽流
-        set ext=
-        set "matched=false"
+        echo # 按任意键继续
+        pause > nul
+
+        :ff3return
+        cls
+        echo.
+        echo                          [38;2;68;157;68m# FFmpeg[m
+        echo.
+        echo =======================视频文件抽流=========================
+        echo 该文件所含轨道如下:
+        echo.
 
         for /f "delims=," %%i in ('ffmpeg -i "!input!" -hide_banner 2^>^&1 ^| findstr "Stream" ') do echo %%i
 
-        set /p tracker=选择你要抽取的轨道:
+        echo.
+        echo ============================================================
+        set /p tracker=选择要抽取的轨道(输入数字并回车):
 
-        for /f "tokens=4 delims=, " %%a in ('ffmpeg -i "!input!" -hide_banner 2^>^&1 ^| findstr "#0:!tracker!" ') do set "ext=%%a"
+        rem 获取ffmpeg下的媒体编码格式
+        for /f "tokens=4 delims=, " %%a in ('ffmpeg -i "!input!" -hide_banner 2^>^&1 ^| findstr "#0:!tracker!" ') do set "output_ext=%%a"
 
-        echo 你选择的轨道的媒体格式为:!ext!
-        if "!ext!"=="av1" set "ext=ivf"
+        echo.
+        echo 你选择轨道的媒体格式为:!output_ext!
+        if "!output_ext!"=="av1" set "output_ext=ivf"
 
         for %%b in (hevc h265 avc h264 av1 ivf aac flac wav ac3 opus mp3 ass srt) do (
-            if "!ext!"=="%%b" (
-                set "matched=ture"
-                ffmpeg -i "!input!" -map 0:!tracker! -c copy output.!ext!
+            if "!output_ext!"=="%%b" (
+                set "IsSwitch=ture"
+                ffmpeg -i "!input!" -map 0:!tracker! -c copy "!input_name!_tracker-!tracker!.!output_ext!" >nul 2>nul 
             )
         )
 
-        if not "!matched!"=="ture" (
-            set /p next=输入自定义扩展名:
-            ffmpeg -i "!input!" -map 0:!tracker! -c copy output.!next!
+        if not "!IsSwitch!"=="ture" (
+            echo 非常见媒体编码格式
+            echo.
+            set /p output_ext=请自己判断并输入扩展名:
+            ffmpeg -i "!input!" -map 0:!tracker! -c copy "!input_name!_tracker-!tracker!.!output_ext!" >nul 2>nul
         )
 
-        set /p retrun=是否需要再次执行(y,n)
-        if "%retrun%"=="y" goto ffmpeg3
+        echo.
+        set /p retrun=是否需要再次执行(是:Y 否:N)
+        set "IsSwitch=false"
+        if /i "%retrun%"=="y" goto ff3return
         exit
 
     :ffmpeg5
-        echo ============================================================
-        echo #ffmpeg
-        echo 封装
+        cls
+        echo.
+        echo                          [38;2;68;157;68m# FFmpeg[m
+        echo.
+        echo =======================媒体文件混流=========================
+        echo.
+        echo    [38;2;255;153;0m功能说明:[m
+        echo.
+        echo         本功能是将一堆媒体文件封装为制定的封装格式
+     
+        echo         每个封装格式对封装内容都有要求
+     
+        echo         不保证每种封装格式都能封装成功
+        
+        echo         建议只封装常用的 mkv 和 mp4
 
-        set "IsSwitch=false"
-        set "inputFiles="
+        echo         字幕在非 mkv 下封装 视频会被重编码
+
+        echo         复杂封装(字体、章节、其他附件)上 [38;2;118;130;200mmkvtoolnixgui[m 吧
+        echo.
+        echo ============================================================
+        echo.
+
+        set inputFiles=
         set "InputSub="       
 
         set /p container=选择封装格式(mkv mp4):
+        echo.
         if /i "%container%"=="mkv" (
             goto muxmkv 
         ) else (
@@ -297,35 +351,46 @@ rem ==================================ffmepg 功能=============================
         )
 
         :muxmkv
-        echo muxmkv
-        echo 你将要封装的文件如下:
-
+        echo ============================================================
+        echo # muxmkv
+        echo                    ···3秒后开始封装···
+        echo.
+        ping 127.0.0.1 -n 3 >nul
         for %%a in (%*) do (
-            echo %%a
             set "InputJudge=%%~xa"
             if /i "!InputJudge!"==".ivf" (
                 set "IsSwitch=ture"
-                set "inputFiles=!InputFiles! -i "%%a""
-            ) else if "!IsSwitch!"=="ture" (
-                set "inputFiles=!InputFiles! -i "%%a""
+                goto muxmkvlvf
             ) else (
-                set "InputFiles=!InputFiles! "%%a""
+                set "InputFiles=!InputFiles! %%a"
             )
         )
-        if "!IsSwitch!"=="ture" (
-            echo ffmpeg !inputFiles! -c copy output_mux.!container!
-        ) else (
-            mkvmerge -o output_mux.mkv !InputFiles!
+        if not "!IsSwitch!"=="ture" (
+            mkvmerge -o output_mux.mkv !InputFiles! >nul 2>nul
+            echo # 封装结束
+            echo # 按任意键关闭命令行窗口
+            pause > nul
+            exit
         )
-        pause
+
+        :muxmkvlvf
+        for %%a in (%*) do (
+            set "InputFiles_lvf=!InputFiles_lvf! -i %%a" 
+        )
+        ffmpeg !InputFiles_lvf! -c copy output_mux.!container! >nul 2>nul
+        echo # 封装结束
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
 
         :muxvideo
-        echo mux!container!
-        echo 你将要封装的文件如下:
+                echo ============================================================
+        echo # mux!container!
+        echo                    ···3秒后开始封装···
+        echo.
+        ping 127.0.0.1 -n 3 >nul
 
         for %%a in (%*) do (
-            echo %%a
             set "InputJudge=%%~xa"
             for %%b in (.hevc .h265 .avc .h264 .ivf) do (
                 if /i "!InputJudge!"=="%%b" (
@@ -344,15 +409,16 @@ rem ==================================ffmepg 功能=============================
                 set "inputFiles=!inputFiles! -i "%%a""
             )
             set "IsSwitch=false"
-
         )
         if defined InputSub (
-            ffmpeg !inputFiles! !InputSub! output_mux.!container!
+            ffmpeg !inputFiles! !InputSub! -c:v libx264 -x264-params "me=umh:subme=10:merange=48:fast-pskip=0:direct=auto:weightb=1:keyint=250:min-keyint=5:bframes=12:b-adapt=2:ref=3:rc-lookahead=90:crf=19:qpmin=9:chroma-qp-offset=-2:aqmode=3:aq-strength=0.7:trellis=2:deblock=0:-1:psy-rd=0.7:0.14:nr=4" output_mux.!container! >nul 2>nul
         ) else (
-            ffmpeg !inputFiles! -c copy output_mux.!container!
+            ffmpeg !inputFiles! -c copy output_mux.!container! >nul 2>nul
         )
-        for %%c in (*cache.mp4) do del "%%c"
-        pause
+        for %%c in (*cache.mp4) do del "%%c" >nul 2>nul
+        echo # 封装结束
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
     
     :ffmpeg3
