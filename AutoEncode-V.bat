@@ -42,9 +42,9 @@ echo.
 echo    [38;2;255;153;0m编码器选择:[m
 echo.
 echo             0. [38;2;68;157;68mffmpeg(转码 抽流 封装)[m  
-echo             1. [38;2;0;94;214mx264[m              
-echo             2. [38;2;0;94;214mx265[m                 
-echo             3. [38;2;188;32;92msvt_av1[m
+echo             1. [38;2;0;94;214mx264(压制)[m              
+echo             2. [38;2;0;94;214mx265(压制)[m                 
+echo             3. [38;2;188;32;92msvt_av1(压制)[m
 echo.
 
 
@@ -339,7 +339,7 @@ rem ==================================ffmepg 功能=============================
         echo ============================================================
         echo.
 
-        set inputFiles=
+        set "inputFiles="
         set "InputSub="       
 
         set /p container=选择封装格式(mkv mp4):
@@ -422,63 +422,90 @@ rem ==================================ffmepg 功能=============================
         exit
     
     :ffmpeg3
+        cls
+        echo.
+        echo                          [38;2;68;157;68m# FFmpeg[m
+        echo.
+        echo ======================媒体文件重编码========================
+        echo.
+        echo    [38;2;255;153;0m功能说明:[m
+        echo.
+        echo        本功能主要是重编码媒体文件 支持批量处理
+     
+        echo        支持的文件类型主要有视频编码格式、音频、图片以及字幕
+
+        echo        但批量一次只能处理一种格式 
+        
+        echo        此功能重合量巨大,追求质量请自行编写参数
+
+        echo.
         echo ============================================================
-        echo #ffmpeg
-
-        echo 简易体重编码
-
-        echo 支持批量处理一次只能处理一种格式
+        echo.
 
         for %%a in (%*) do (
-            echo %%a
             set "InputExt=%%~xa"
-            for %%b in (.avc .h264 .264 .hevc .h265 .265 .lvf) do (
+            for %%b in (.avc .h264 .264 .hevc .h265 .265 .ivf) do (
                 if /i "!InputExt!"=="%%b" (
                     echo 你输入的是视频编码格式
 
-                    echo 请选择需要需要转换媒体格式的编码器
+                    echo 选择转换格式使用的编码器:
                     echo.
-                    echo HEVC/H.265 : libx265 / hevc_nvenc / hevc_qsv
-                    echo AVC/H.264 : libx264 / h264_nvenc / h264_qsv
-                    echo AV1 : libsvtav1 / libaom-av1 / av1_qsv
+                    echo          HEVC/H.265 : libx265 / hevc_nvenc / hevc_qsv
+                    echo          AVC/H.264  : libx264 / h264_nvenc / h264_qsv
+                    echo          AV1 : libsvtav1 / libaom-av1 / av1_qsv
                 goto tsvideo
                 )
 
             )
             for %%c in (.wav .flac .mp3 .aac .opus .ape .ac3 .ogg) do (
                 if /i "!InputExt!"=="%%c" (
-                    echo 你输入的是音频编码格式
+                    echo 你输入的是音频格式
 
-                    echo 请选择需要需要转换媒体格式的编码器:
+                    echo 选择转换格式使用的编码器:
                     echo.
-                    echo FLAC : flac
-                    echo OPUS : libopus
-                    echo MP3 : libmp3lame
-                    echo AAC : libfdk_aac / aac
-                    echo AC3 : ac3  / ac3_fixed
+                    echo                FLAC : flac
+                    echo                OPUS : libopus
+                    echo                MP3  : libmp3lame
+                    echo                AAC  : libfdk_aac / aac
+                    echo                AC3  : ac3  / ac3_fixed
                     goto tsaudio
                 )
             )
             for %%d in (.png .jpg .jpeg .bmp .webp .avif .heif .jxl .tiff .tif) do (
                 if /i "!InputExt!"=="%%d" (
-                    echo 你输入的是图片编码格式
+                    echo 你输入的是图片格式
 
                     echo ffmpeg转换图片并不是强项,多少有点问题
 
-                    echo 请选择需要需要转换媒体格式的编码器:
+                    echo 选择转换格式使用的编码器:
                     echo.
-                    echo PNG : png
-                    echo JPEG : jpg
-                    echo JPEG2000 : jpeg2000
-                    echo WEBP : libwebp
-                    echo AVIF : libsvtav1
-                    echo JXL : libjxl
+                    echo                PNG : png
+                    echo                JPEG : jpg
+                    echo                JPEG2000 : jpeg2000
+                    echo                WEBP : libwebp
+                    echo                AVIF : libsvtav1
+                    echo                JXL : libjxl
                     goto tspicture
+                )
+            )
+            for %%e in (.ass .srt .vtt .lrc) do (
+                if /i "!InputExt!"=="%%e" (
+                    echo 你输入的是字幕格式
+
+                    echo 选择转换格式使用的编码器:
+                    echo.
+                    echo                ASS : ass
+                    echo                SRT : srt
+                    echo                WEBVTT : vtt
+                    echo                Lyric : lrc
+                    goto tssub
                 )
             )
         )
 
         :tsvideo
+        echo.
+        echo ============================================================
         set /p codec=请输入编码器名称:
 
         for %%i in (hevc h.265 265 libx265 hevc_nvenc hevc_qsv) do (
@@ -492,15 +519,20 @@ rem ==================================ffmepg 功能=============================
         )
 
         for %%a in (%*) do (
-            ffmpeg -i "%%a" -c:v !codec! "%%~na_!codec!.!OutputExt!"
+            ffmpeg -i %%a -c:v !codec! "%%~na_!codec!.!OutputExt!" >nul 2>nul
         )
-        pause
+        echo # 重编码结束
+
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
 
         :tsaudio
+        echo.
+        echo ============================================================
         set /p codec=请输入编码器名称:
         for %%i in (flac aac ac3) do (
-            if /i "!codec!"=="%%i" set OutputExt=!codec!
+            if /i "!codec!"=="%%i" set "OutputExt=!codec!"
             )
         if /i "!codec!"=="libmp3lame" set OutputExt=mp3
         if /i "!codec!"=="libopus" set OutputExt=opus
@@ -508,20 +540,28 @@ rem ==================================ffmepg 功能=============================
         if /i "!codec!"=="ac3_fixed" set OutputExt=ac3
 
         for %%a in (%*) do (
-            ffmpeg -i "%%a" -c:v !codec! "%%~na_!codec!.!OutputExt!"
+            ffmpeg -i %%a -c:v !codec! "%%~na_!codec!.!OutputExt!" >nul 2>nul
         )
-        pause
+        echo # 重编码结束
+
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
 
         :tspicture
+        echo.
+        echo ============================================================
         set /p codec=请输入编码器名称:
 
         if /i "!codec!"=="jpg" (
             set OutputExt=jpg
             for %%a in (%*) do (
-                ffmpeg -i "%%a" -q 5 "%%~na_!codec!.!OutputExt!"
+                ffmpeg -i %%a -q 5 "%%~na_!codec!.!OutputExt!" >nul 2>nul
             )
-            pause
+            echo # 重编码结束
+
+            echo # 按任意键关闭命令行窗口
+            pause > nul
             exit
         ) 
         if /i "!codec!"=="png" set OutputExt=png
@@ -531,9 +571,29 @@ rem ==================================ffmepg 功能=============================
         if /i "!codec!"=="libjxl" set OutputExt=jxl
 
         for %%a in (%*) do (
-            ffmpeg -i "%%a" -c:v !codec! "%%~na_!codec!.!OutputExt!"
+            ffmpeg -i %%a -c:v !codec! "%%~na_!codec!.!OutputExt!" >nul 2>nul
         )
-        pause
+        echo # 重编码结束
+
+        echo # 按任意键关闭命令行窗口
+        pause > nul
+        exit
+        
+        :tssub
+        echo.
+        echo ============================================================
+        set /p codec=请输入编码器名称:
+
+        for %%i in (vtt ass srt lrc) do (
+            if /i "!codec!"=="%%i" set "OutputExt=!codec!"
+        )
+        for %%a in (%*) do (
+            ffmpeg -i %%a "%%~na_!codec!.!OutputExt!" >nul 2>nul
+        )
+        echo # 重编码结束
+
+        echo # 按任意键关闭命令行窗口
+        pause > nul
         exit
 
 
