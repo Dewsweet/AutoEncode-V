@@ -12,7 +12,7 @@ rem ===================================信息打印=============================
 cls
 echo.
 echo       *************************************************
-echo       *              AutoEncode-V v0.8.4              *
+echo       *              AutoEncode-V v1.0              *
 echo       *                  By Dewsweet                  *
 echo       *            简易批处理视频编码脚本             *
 echo       *        虽然但是 还是图形操作界面用的多        *
@@ -42,7 +42,7 @@ echo.
 echo    [38;2;255;153;0m编码器选择:[m
 echo.
 echo             0. [38;2;68;157;68mffmpeg(转码 抽流 封装)[m  
-echo             1. [38;2;0;94;214mx264(压制)[m              
+echo             1. [38;2;0;191;255mx264(压制)[m              
 echo             2. [38;2;0;94;214mx265(压制)[m                 
 echo             3. [38;2;188;32;92msvt_av1(压制)[m
 echo.
@@ -53,6 +53,7 @@ rem ===================================变量初始化==========================
 set input=%~1
 set input_path=%~dp1
 set input_name=%~n1
+set input_ext=%~x1
 set "output_ext="
 set "IsSwitch=false"
 
@@ -196,41 +197,42 @@ rem ==================================ffmepg 功能=============================
         if "!codec!"=="1" (
             for %%i in (%*) do (
                 set "input=%%i"
-                set "file_name=%%~ni" 
-                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libx264 -preset veryslow -crf 19 -c:a copy -c:s copy "!file_name!.!container!"
+                set "input_name=%%~ni" 
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libx264 -preset veryslow -crf 19 -c:a copy -c:s copy "!input_name!.!container!"
             )
         )
         if "!codec!"=="2" (
             for %%i in (%*) do (
                 set "input=%%i"
-                set "file_name=%%~ni" 
-                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v h264_nvenc -preset slow -crf 17 -c:a copy -c:s copy "!file_name!.!container!"
+                set "input_name=%%~ni" 
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v h264_nvenc -preset slow -crf 17 -c:a copy -c:s copy "!input_name!.!container!"
             )
         )
         if "!codec!"=="3" (
             for %%i in (%*) do (
                 set "input=%%i"
-                set "file_name=%%~ni" 
-                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libx265 -preset slower -crf 23 -c:a copy -c:s copy "!file_name!.!container!"
+                set "input_name=%%~ni" 
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libx265 -preset slower -crf 23 -c:a copy -c:s copy "!input_name!.!container!"
             )
         )  
         if "!codec!"=="4" (
             for %%i in (%*) do (
                 set "input=%%i"
-                set "file_name=%%~ni" 
-                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v hevc_nvenc -preset slow -crf 21 -c:a copy -c:s copy "!file_name!.!container!"
+                set "input_name=%%~ni" 
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v hevc_nvenc -preset slow -crf 21 -c:a copy -c:s copy "!input_name!.!container!"
             )
         )
         if "!codec!"=="5" (
             for %%i in (%*) do (
                 set "input=%%i"
-                set "file_name=%%~ni" 
-                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libsvtav1 -preset 4 -crf 23 -c:a copy -c:s copy "!file_name!.!container!"
+                set "input_name=%%~ni" 
+                ffmpeg -y -vsync 0 -hwaccel auto -i "!input!" -c:v libsvtav1 -preset 4 -crf 23 -c:a copy -c:s copy "!input_name!.!container!"
             )
         )
         echo.
         echo ============================================================
         echo # 转码结束
+
         echo # 按任意键关闭命令行窗口
         pause > nul
         exit
@@ -239,12 +241,13 @@ rem ==================================ffmepg 功能=============================
         set /p container=转成什么(mkv mp4 mov avi wmv rmvb flv):
         for %%i in (%*) do (
             set "input=%%i"
-            set "file_name=%%~ni"  
-            ffmpeg -y -i "!input!" -c copy "!file_name!.!container!" 
+            set "input_name=%%~ni"  
+            ffmpeg -y -i "!input!" -c copy "!input_name!.!container!" 
         )
         echo.
         echo ============================================================
         echo # 转码结束
+        
         echo # 按任意键关闭命令行窗口
         pause > nul
         exit
@@ -368,6 +371,7 @@ rem ==================================ffmepg 功能=============================
         if not "!IsSwitch!"=="ture" (
             mkvmerge -o output_mux.mkv !InputFiles! >nul 2>nul
             echo # 封装结束
+
             echo # 按任意键关闭命令行窗口
             pause > nul
             exit
@@ -379,6 +383,7 @@ rem ==================================ffmepg 功能=============================
         )
         ffmpeg !InputFiles_lvf! -c copy output_mux.!container! >nul 2>nul
         echo # 封装结束
+
         echo # 按任意键关闭命令行窗口
         pause > nul
         exit
@@ -417,6 +422,7 @@ rem ==================================ffmepg 功能=============================
         )
         for %%c in (*cache.mp4) do del "%%c" >nul 2>nul
         echo # 封装结束
+
         echo # 按任意键关闭命令行窗口
         pause > nul
         exit
@@ -601,18 +607,34 @@ rem ==================================ffmepg 功能=============================
 
 
 :tox264
-    echo ============================================
-    echo # x264
+    cls
+    echo.
+    echo                          [38;2;0;191;255m# x264[m
+    echo.
+    echo =======================x264 视频编码========================
+    echo.
+    echo    [38;2;255;153;0m参数选择:[m
+    echo.
+    echo            1. 动画-WebRip
+    echo            2. 动画-BDRip
+    echo            3. 普通电影
+    echo            4. 日常
+    echo            5. 其他(存档)
+
+    echo.
+    echo            [38;2;0;65;5m更多预设正在思考中……[m
+
+    echo            [38;2;255;124;3m输入 0 返回编码器选择界面[m
+    echo.
+
+    echo ============================================================
+    echo.
+
     set ectool=x264
     set output_ext=.avc
-    ::参数选择
-        echo 1. 动画-Webrip
-        echo 2. 动画-BDrip
-        echo 3. 普通电影
-        echo 4. 日常
-        echo 5. 其他(存档)
 
         set /p parameter=选择需要压制的参数：
+        if "%parameter%"=="0" goto sloop
         if "%parameter%"=="1" set encoder_par=--preset veryslow --me umh --subme 9 --merange 32 --no-fast-pskip --weightb --keyint 240 --min-keyint 1 --bframes 10 --b-adapt 2 --ref 3 --rc-lookahead 70 --crf 21 --qcomp 0.7 --chroma-qp-offset -2 --aq-mode 3 --aq-strength 0.7 --deblock 0:-1 --psy-rd 0.6:0.15 --range tv --colorprim bt709
 
         if "%parameter%"=="2" set encoder_par=--preset veryslow --me tesa --subme 9 --merange 32 --no-fast-pskip --direct auto --weightb --keyint 240 --min-keyint 1 --bframes 8 --b-adapt 2 --ref 3 --rc-lookahead 72 --crf 17 --qcomp 0.7 --qpmin 9 --chroma-qp-offset -2 --aq-mode 3  --aq-strength 0.7 --trellis 2 --deblock -1:-1 --psy-rd 0.6:0.15 --range tv --colorprim bt709 --transfer bt709 --colormatrix bt709
@@ -622,26 +644,60 @@ rem ==================================ffmepg 功能=============================
         if "%parameter%"=="4" set encoder_par=--preset veryslow --me umh --subme 9 --merange 24 --no-fast-pskip --direct auto --weightb --keyint 270 --min-keyint 5 --bframes 12 --b-adapt 2 --ref 6 --rc-lookahead 80 --crf 19 --qcomp 0.6 --qpmin 9 --chroma-qp-offset -2 --aq-mode 3  --aq-strength 0.8 --trellis 2 --deblock 0:-1 --psy-rd 0.7:0.15
 
         if "%parameter%"=="5" set encoder_par=--preset veryslow --me esa --subme 10 --merange 40 --no-fast-pskip --direct auto --weightb --keyint 70 --min-keyint 1 --bframes 12 --b-adapt 2 --ref 3 --crf 16 --tune grain --trellis 2 --fgo 15
-    echo ============================================
+    cls
+    echo.
+    echo                          [38;2;0;191;255m# x264[m
+    echo ============================================================
     echo # x264开始压制
-    %ectool% %encoder_par% --output "%input_path%\%file_name%%output_ext%" "%input%" 2>&1 | tee info.txt
+    %ectool% %encoder_par% --output "%input_path%%input_name%_encoded%output_ext%" "%input%" 2>&1 | tee log.txt
+    cls
+    echo.
+    echo                          [38;2;0;191;255m# x264[m
+    echo ============================================================
     echo # 结束压制
-    pause
+    echo.
+    echo 已生成日志文件
+
+    echo 按任意键关闭命令行窗口
+    pause > nul
     exit
 
 :tox265
-    echo ============================================
-    echo # x265
+    cls
+    echo.
+    echo                          [38;2;0;94;214m# x265[m
+    echo.
+    echo =======================x265 视频编码========================
+    echo.
+    echo    [38;2;255;153;0m参数选择:[m
+    echo.
+    echo            1. 通用
+    echo            2. 动画-WebRip
+    echo            3. 动画-BDRip
+    echo            4. 4K电影
+    echo            5. 其他(存档)
+
+    echo.
+    echo            [38;2;0;65;5m更多预设正在思考中……[m
+
+    echo            [38;2;255;124;3m输入 0 返回编码器选择界面[m
+    echo.
+
+    echo ============================================================
+    echo.
+
     set ectool=x265
     set output_ext=.hevc
-    ::参数选择
-        echo 1. 通用
-        echo 2. 动画-Webrip
-        echo 3. 动画-BDrip
-        echo 4. 4K电影
-        echo 5. 其他(存档)
+
+        for %%a in (.avc .hevc .ivf .mkv .h265 .h264) do (
+            if "!input_ext!"=="%%a" (
+                ffmpeg -i "!input!" -map 0 -c copy -an "!input_path!!input_name!_cache.mp4" >nul 2>nul
+                set "input=!input_path!!input_name!_cache.mp4"
+            )
+        )
 
         set /p parameter=选择需要压制的参数：
+        if "%parameter%"=="0" goto sloop
         if "%parameter%"=="1" set encoder_par=--preset slower --ctu 32 --min-cu-size 16 --tu-intra-depth 3 --tu-inter-depth 3 --limit-tu 1 --rdpenalty 1 --me umh --subme 4 --merange 32 --weightb --ref 3 --max-merge 2 --early-skip --no-open-gop --keyint 300 --min-keyint 5 --fades --bframes 8 --b-adapt 2 --b-intra --crf 19 --cbqpoffs -3 --crqpoffs -2 --ipratio 1.2 --pbratio 1.3 --aq-mode 3 --aq-strength 0.7 --limit-modes --limit-refs 1 --rskip 1 --rc-lookahead 90 --tskip-fast --rect --amp --rd 3 --rdoq-level 1 --psy-rd 1.6 --limit-sao --deblock 0:-1 --allow-non-conformance
 
         if "%parameter%"=="2" set encoder_par=--preset slower --ctu 32 --min-cu-size 16 --tu-intra-depth 3 --tu-inter-depth 3 --limit-tu 3 --rskip 0 --me star --subme 5 --merange 32 --weightb --max-merge 3 --ref 5 --no-open-gop --keyint 240 --min-keyint 1 --fades --bframes 10 --b-adapt 2 --b-intra --no-strong-intra-smoothing --crf 18 --qcomp 0.6 --cbqpoffs -2 --crqpoffs -2 --ipratio 1.2 --pbratio 1.3 --hevc-aq --aq-strength 0.9 --qg-size 16 --rc-lookahead 80 --no-rect --no-amp  --rd 4 --psy-rdoq 0.5 --rdoq-level 2 --psy-rd 1.5 --no-sao --deblock 0:-1
@@ -651,35 +707,80 @@ rem ==================================ffmepg 功能=============================
         if "%parameter%"=="4" set encoder_par=--preset veryslow --ctu 64 --tu-intra-depth 4 --tu-inter-depth 4 --limit-tu 0 --rskip 0 --me umh --subme 4 --merange 57 --weightb --max-merge 3 --ref 5 --no-open-gop --keyint 360 --min-keyint 3 --fades --bframes 12 --b-adapt 2 --b-intra --no-strong-intra-smoothing --crf 21 --qcomp 0.6 --cbqpoffs -3 --crqpoffs -2 --ipratio 1.2 --pbratio 1.5 --aq-mode 4 --aq-strength 1.2 --qg-size 16 --rc-lookahead 72 --no-rect --no-amp --rd 3 --rdoq-level 2 --psy-rd 2.2 --limit-sao --deblock 0:-1 
 
         if "%parameter%"=="5" set encoder_par=--preset slower --ctu 32 --me star --subme 4 --merange 48 --max-merge 4 --early-skip --no-open-gop --keyint 220 --min-keyint 1 --ref 3 --fades --bframes 7 --b-adapt 2 --b-intra --crf 17 --cbqpoffs -3 --crqpoffs -2 --rd 3 --limit-modes --limit-refs 1 --rskip 1 --rc-lookahead 90 --splitrd-skip --deblock -1:-1 --tune grain
-    echo ============================================
+    cls
+    echo.
+    echo                          [38;2;0;94;214m# x265[m
+    echo ============================================================
     echo # x265开始压制
 
     for /f %%a in ('ffprobe -v error -select_streams v^:0 -show_entries stream^=nb_frames -of default^=noprint_wrappers^=1^:nokey^=1 "%input%" ') do set in_frames=%%a
 
-    ffmpeg -i "%input%" -an -pix_fmt yuv420p -f yuv4mpegpipe -strict unofficial - | %ectool% --frames %in_frames% --y4m %encoder_par% --output "%input_path%\%file_name%%output_ext%" - log.txt
+    ffmpeg -i "%input%" -an -map 0:v:0 -f yuv4mpegpipe -strict unofficial - | %ectool% --frames %in_frames% --y4m %encoder_par% --output "%input_path%%input_name%_encoded%output_ext%" - 2>&1 | tee log.txt
+    cls
+    echo.
+    echo                          [38;2;0;94;214m# x265[m
+    echo ============================================================
     echo # 结束压制
-    pause
+    echo.
+    echo 已生成日志文件
+
+    echo 按任意键关闭命令行窗口
+    pause > nul
     exit
 
 :toav1
-    echo ============================================
-    echo # svt_av1
+    cls
+    echo.
+    echo                       [38;2;188;32;92m# svt_av1[m
+    echo.
+    echo =====================svt_av1 视频编码======================
+    echo.
+    echo    [38;2;255;153;0m参数选择:[m
+    echo.
+    echo            1. 通用
+
+    echo            3. 动画-BDRip
+    echo.
+    echo            [38;2;0;65;5m更多预设正在思考中……[m
+
+    echo            [38;2;255;124;3m输入 0 返回编码器选择界面[m
+    echo.
+
+    echo ============================================================
+    echo.
+
     set ectool=svtav1
     set output_ext=.ivf
-    ::参数选择
-        echo 1. 通用
-        echo 2. 动画-BDrip
+
+        for %%a in (.avc .hevc .ivf .mkv .h265 .h264) do (
+            if "!input_ext!"=="%%a" (
+                ffmpeg -i "!input!" -map 0 -c copy -an "!input_path!!input_name!_cache.mp4" >nul 2>nul
+                set "input=!input_path!!input_name!_cache.mp4"
+            )
+        )
 
         set /p parameter=选择需要压制的参数：
+        if "%parameter%"=="0" goto sloop
         if "%parameter%"=="1" set encoder_par=--preset 4 --rc 0 --qp 30 --max-qp 55 --min-qp 8 --crf 23 --aq-mode 2 --keyint 300 --irefresh-type 2 --scd 1 --lookahead 80 --scm 2 --enable-tpl-la 1
 
         if "%parameter%"=="2" set encoder_par=--preset 3 --rc 0 --qp 25 --max-qp 50 --crf17 --aq-mode 2 --keyint 240 --irefresh-type 2 --scd 1 --lookahead 80 --scm 1 --enable-tpl-la 1
 
-    echo ============================================
-    echo # AV1开始压制
-    ffmpeg -i "%input%" -an -pix_fmt yuv420p -f yuv4mpegpipe -strict unofficial - | %ectool% %encoder_par%  -b "%input_path%\%file_name%%output_ext%" -i stdin 
+    cls
+    echo.
+    echo                         [38;2;188;32;92m# svt_av1[m
+    echo ============================================================
+    echo # svt_av1开始压制
+    ffmpeg -i "%input%" -an -f yuv4mpegpipe -strict unofficial - | %ectool% %encoder_par%  -b "%input_path%%input_name%_encoded%output_ext%" -i stdin 2>&1 | tee log.txt
+    cls
+    echo.
+    echo                         [38;2;188;32;92m# svt_av1[m
+    echo ============================================================
     echo # 结束压制
-    pause
+    echo.
+    echo 已生成日志文件
+
+    echo 按任意键关闭命令行窗口
+    pause > nul
     exit
 
 
